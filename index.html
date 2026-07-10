@@ -340,9 +340,9 @@
         
         <div class="content">
             <!-- Dashboard Page -->
-            <div id="dashboard" cla id="dashboardTitle">金錢管理桌面</div>
-                <div class="theme">(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
-                <div class="theme">(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ 以俄語遮羞的鄰座艾莉同學 ✧ﾟ･: *ヽ(◕ヮ◕ヽ)</div>
+            <div id="dashboard" class="page active">
+                <div class="header" id="dashboardTitle">金錢管理桌面</div>
+                <div class="theme">(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ ✧ﾟ･: *ヽ(◕ヮ◕ヽ)</div>
                 
                 <div class="balance-display">
                     <div class="balance-label">目前餘額</div>
@@ -502,6 +502,23 @@
         }
 
         // Handle set name
+        function handleSetName() {
+            const name = document.getElementById('userName').value.trim();
+            
+            if (!name) {
+                alert('請輸入你的名字');
+                return;
+            }
+
+            app.userName = name;
+            document.getElementById('userName').value = '';
+            alert('名字已設定為：' + name);
+            updateAppTitle();
+            showPage('dashboard');
+        }
+
+        // Update dashboard display
+        function updateDashboard() {
             document.getElementById('balanceDisplay').textContent = app.balance.toFixed(2) + ' 元';
             updateTransactionList();
         }
@@ -696,12 +713,12 @@
             alert('已儲存資料');
         }
 
-        // Load datauserName = data.userName || '訪客';
-                app. from localStorage
+        // Load data from localStorage
         function loadData() {
             const saved = localStorage.getItem('moneyManagerApp');
             if (saved) {
                 const data = JSON.parse(saved);
+                app.userName = data.userName || '訪客';
                 app.balance = data.balance || 0;
                 app.transactions = data.transactions || [];
                 app.wishlist = data.wishlist || [];
