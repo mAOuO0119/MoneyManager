@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小櫻的金錢管理桌面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            height: 600px;
+        }
+        
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .logo {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .nav-btn {
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        
+        .nav-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .theme {
+            font-size: 14px;
+            color: #ff69b4;
+            margin-bottom: 30px;
+        }
+        
+        .balance-display {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(46,204,113,0.3);
+        }
+        
+        .balance-label {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        
+        .currency {
+            font-size: 24px;
+            margin-left: 10px;
+        }
+        
+        .transaction-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        
+        .transaction-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tx-info {
+            flex: 1;
+        }
+        
+        .tx-type {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .tx-note {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .tx-amount {
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: right;
+        }
+        
+        .income {
+            color: #2ecc71;
+        }
+        
+        .expense {
+            color: #e74c3c;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            padding: 10px 15px;
+            font-size: 12px;
+        }
+        
+        .wishlist-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .wish-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .wish-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-size: 14px;
+        }
+        
+        .wish-detail {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .wish-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .wish-value {
+            color: #333;
+        }
+        
+        .recommendation {
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .recommend-yes {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .recommend-maybe {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .recommend-no {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .investment-message {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .investment-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                🌸<br><span id="appTitle">金錢管理<br>桌面</span><br>v2.0
+            </div>
+            <button class="nav-btn active" onclick="showPage('dashboard')">📊 首頁</button>
+            <button class="nav-btn" onclick="showPage('setName')">👤 設定名字</button>
+            <button class="nav-btn" onclick="showPage('setBalance')">💰 設定餘額</button>
+            <button class="nav-btn" onclick="showPage('addTx')">➕ 新增收支</button>
+            <button class="nav-btn" onclick="showPage('investment')">📈 投資</button>
+            <button class="nav-btn" onclick="showPage('wishlist')">🛍️ 購物清單</button>
+            <button class="nav-btn" onclick="showPage('addWish')">✨ 新增願望</button>
+            <div style="flex: 1;"></div>
+            <button class="nav-btn" onclick="saveData()" style="background: #2ecc71; border-color: #2ecc71;">💾 儲存</button>
+            <button class="nav-btn" onclick="closeApp()" style="background: #e74c3c; border-color: #e74c3c;">❌ 離開</button>
+        </div>
+        
+        <div class="content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" cla id="dashboardTitle">金錢管理桌面</div>
+                <div class="theme">(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
+                <div class="theme">(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ 以俄語遮羞的鄰座艾莉同學 ✧ﾟ･: *ヽ(◕ヮ◕ヽ)</div>
+                
+                <div class="balance-display">
+                    <div class="balance-label">目前餘額</div>
+                    <div class="balance-amount" id="balanceDisplay">0.00<span class="currency">元</span></div>
+                </div>
+                
+                <h3 style="margin-bottom: 15px;">最近收支記錄</h3>
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">
+                        <div class="emoji">📝</div>
+                        目前沒有任何紀錄
+                    </div>
+                </div>
+                
+                <button class="delete-btn" onclick="deleteLastTransaction()">🗑️ 刪除最後一筆</button>
+            </div>
+            
+            <!-- Set Name Page -->
+            <div id="setName" class="page">
+                <div class="header">設定你的名字</div>
+                <div class="theme">👤 自訂你的名字在這個應用中顯示</div>
+                
+                <div class="form-group">
+                    <label>你的名字：</label>
+                    <input type="text" id="userName" placeholder="輸入你的名字">
+                </div>
+                
+                <button onclick="handleSetName()">確認設定</button>
+            </div>
+            
+            <!-- Set Balance Page -->
+            <div id="setBalance" class="page">
+                <div class="header">設定目前餘額</div>
+                <div class="theme">💰 自由設定你的目前金額</div>
+                
+                <div class="form-group">
+                    <label>新的餘額：</label>
+                    <input type="number" id="newBalance" step="0.01" placeholder="輸入金額">
+                </div>
+                
+                <button onclick="handleSetBalance()">確認設定</button>
+            </div>
+            
+            <!-- Add Transaction Page -->
+            <div id="addTx" class="page">
+                <div class="header">新增收支</div>
+                <div class="theme">➕ 記錄每一筆收入與支出</div>
+                
+                <div class="form-group">
+                    <label>類型：</label>
+                    <select id="txType">
+                        <option value="income">收入</option>
+                        <option value="expense">支出</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>金額：</label>
+                    <input type="number" id="txAmount" step="0.01" placeholder="輸入金額">
+                </div>
+                
+                <div class="form-group">
+                    <label>說明：</label>
+                    <input type="text" id="txNote" placeholder="例如：早餐、工資等">
+                </div>
+                
+                <button onclick="handleAddTransaction()">新增記錄</button>
+            </div>
+            
+            <!-- Investment Page -->
+            <div id="investment" class="page">
+                <div class="investment-message">
+                    <div class="investment-emoji">ᕙ( •̀ ᗜ •́ )ᕗ</div>
+                    <div class="header" style="margin-bottom: 15px;">投資頁面</div>
+                    <p style="font-size: 18px; color: #666; line-height: 1.8;">
+                        [投資] 這一頁暫時是空白的，等你準備好再來規劃。<br><br>
+                        先把日常預算穩穩打好吧。
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Wishlist Page -->
+            <div id="wishlist" class="page">
+                <div class="header">想要購買的項目</div>
+                <div class="theme">🛍️ 查看你的願望清單與購買建議</div>
+                
+                <div id="wishlistItems">
+                    <div class="empty-state">
+                        <div class="emoji">🎁</div>
+                        目前清單還是空的
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Wish Page -->
+            <div id="addWish" class="page">
+                <div class="header">新增願望清單</div>
+                <div class="theme">✨ 加入你想要購買的物品</div>
+                
+                <div class="form-group">
+                    <label>物品名稱：</label>
+                    <input type="text" id="wishName" placeholder="例如：新手機、遊戲主機等">
+                </div>
+                
+                <div class="form-group">
+                    <label>價格：</label>
+                    <input type="number" id="wishPrice" step="0.01" placeholder="輸入價格">
+                </div>
+                
+                <div class="form-group">
+                    <label>備註（可選）：</label>
+                    <textarea id="wishNote" placeholder="補充說明" rows="3"></textarea>
+                </div>
+                
+                <button onclick="handleAddWish()">新增到願望清單</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        const app = {
+            userName: '訪客',
+            balance: 0.0,
+            transactions: [],
+            wishlist: []
+        };
+
+        // Load data on startup
+        window.addEventListener('load', () => {
+            loadData();
+            updateDashboard();
+            updateAppTitle();
+        });
+
+        // Show page function
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageName).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (pageName === 'wishlist') {
+                updateWishlistDisplay();
+            }
+        }
+
+        // Update app title
+        function updateAppTitle() {
+            document.getElementById('appTitle').textContent = app.userName + '的金錢\n管理桌面';
+            document.getElementById('dashboardTitle').textContent = app.userName + '的金錢管理桌面';
+        }
+
+        // Handle set name
+            document.getElementById('balanceDisplay').textContent = app.balance.toFixed(2) + ' 元';
+            updateTransactionList();
+        }
+
+        // Update transaction list
+        function updateTransactionList() {
+            const list = document.getElementById('transactionList');
+            if (app.transactions.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">📝</div>
+                        目前沒有任何紀錄
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            const displayCount = Math.min(app.transactions.length, 10);
+            for (let i = app.transactions.length - displayCount; i < app.transactions.length; i++) {
+                const tx = app.transactions[i];
+                const isIncome = tx.type === 'income';
+                const typeStr = isIncome ? '收入' : '支出';
+                const amountClass = isIncome ? 'income' : 'expense';
+                const symbol = isIncome ? '+' : '-';
+                
+                html += `
+                    <div class="transaction-item">
+                        <div class="tx-info">
+                            <div class="tx-type">${typeStr}</div>
+                            <div class="tx-note">${tx.note}</div>
+                        </div>
+                        <div class="tx-amount ${amountClass}">${symbol}${tx.amount.toFixed(2)}</div>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
+        // Handle add transaction
+        function handleAddTransaction() {
+            const type = document.getElementById('txType').value;
+            const amount = parseFloat(document.getElementById('txAmount').value);
+            const note = document.getElementById('txNote').value;
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('請輸入有效的金額');
+                return;
+            }
+            if (!note) {
+                alert('請輸入說明');
+                return;
+            }
+
+            if (type === 'income') {
+                app.balance += amount;
+            } else {
+                app.balance -= amount;
+            }
+
+            app.transactions.push({
+                type: type,
+                amount: amount,
+                note: note
+            });
+
+            document.getElementById('txAmount').value = '';
+            document.getElementById('txNote').value = '';
+            
+            alert('已新增記錄');
+            showPage('dashboard');
+            updateDashboard();
+        }
+
+        // Handle set balance
+        function handleSetBalance() {
+            const newBalance = parseFloat(document.getElementById('newBalance').value);
+            
+            if (isNaN(newBalance)) {
+                alert('請輸入有效的金額');
+                return;
+            }
+
+            app.balance = newBalance;
+            document.getElementById('newBalance').value = '';
+            alert('餘額已更新');
+            updateDashboard();
+        }
+
+        // Handle add wish
+        function handleAddWish() {
+            const name = document.getElementById('wishName').value;
+            const price = parseFloat(document.getElementById('wishPrice').value);
+            const note = document.getElementById('wishNote').value;
+
+            if (!name) {
+                alert('請輸入物品名稱');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                alert('請輸入有效的價格');
+                return;
+            }
+
+            app.wishlist.push({
+                name: name,
+                price: price,
+                note: note
+            });
+
+            document.getElementById('wishName').value = '';
+            document.getElementById('wishPrice').value = '';
+            document.getElementById('wishNote').value = '';
+            
+            alert('已新增到願望清單');
+            showPage('wishlist');
+            updateWishlistDisplay();
+        }
+
+        // Update wishlist display
+        function updateWishlistDisplay() {
+            const container = document.getElementById('wishlistItems');
+            if (app.wishlist.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🎁</div>
+                        目前清單還是空的
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (let i = 0; i < app.wishlist.length; i++) {
+                const item = app.wishlist[i];
+                const remaining = app.balance - item.price;
+                const recommendation = getRecommendation(app.balance, item.price);
+                const recClass = recommendation.class;
+                const recText = recommendation.text;
+
+                html += `
+                    <div class="wishlist-item">
+                        <div class="wish-name">🛍️ ${item.name}</div>
+                        <div class="wish-details">
+                            <div class="wish-detail">
+                                <div class="wish-label">價格</div>
+                                <div class="wish-value">${item.price.toFixed(2)} 元</div>
+                            </div>
+                            <div class="wish-detail">
+                                <div class="wish-label">購後剩餘</div>
+                                <div class="wish-value">${remaining.toFixed(2)} 元</div>
+                            </div>
+                        </div>
+                        ${item.note ? `<div class="wish-detail" style="grid-column: 1/-1;"><strong>備註：</strong> ${item.note}</div>` : ''}
+                        <div class="recommendation ${recClass}">${recText}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // Get recommendation
+        function getRecommendation(balance, price) {
+            if (price <= 0) return { class: 'recommend-maybe', text: '⚠️ 無效價格' };
+            const remaining = balance - price;
+            if (remaining >= 500) return { class: 'recommend-yes', text: '✅ 建議購買：預算還很寬裕！' };
+            if (remaining >= 0) return { class: 'recommend-maybe', text: '⚠️ 可以考慮：剩餘金額還夠' };
+            return { class: 'recommend-no', text: '❌ 不建議購買：會讓餘額變成負數' };
+        }
+
+        // Delete last transaction
+        function deleteLastTransaction() {
+            if (app.transactions.length === 0) {
+                alert('沒有可刪除的記錄');
+                return;
+            }
+
+            const tx = app.transactions.pop();
+            if (tx.type === 'income') {
+                app.balance -= tx.amount;
+            } else {
+                app.balance += tx.amount;
+            }
+
+            alert('已刪除最後一筆記錄');
+            updateDashboard();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('moneyManagerApp', JSON.stringify(app));
+            alert('已儲存資料');
+        }
+
+        // Load datauserName = data.userName || '訪客';
+                app. from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('moneyManagerApp');
+            if (saved) {
+                const data = JSON.parse(saved);
+                app.balance = data.balance || 0;
+                app.transactions = data.transactions || [];
+                app.wishlist = data.wishlist || [];
+            }
+        }
+
+        // Close app
+        function closeApp() {
+            if (confirm('確定要離開嗎？')) {
+                saveData();
+                alert('再見！祝你財務順利。');
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>
